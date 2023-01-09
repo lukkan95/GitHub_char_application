@@ -33,7 +33,7 @@ class GitRepoSigns(object):
     def get_api(self, search_user='OverCookedAgain'):
         self.search_user = search_user
         self.url = f'https://api.github.com/users/{self.search_user}/repos'
-        response = requests.get(self.url, auth=('szati95@wp.pl', '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'))
+        response = requests.get(self.url, auth=('szati95@wp.pl', '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'))
         if response.status_code == 200:
             return response
 
@@ -50,7 +50,6 @@ class GitRepoSigns(object):
             for resp in master_list.json():
                 name_str.append(resp['name'])
             whole_signs = ''.join(name_str)
-            print('here')
             self.graph_data(self.char_frequency(whole_signs))
 
     def char_frequency(self, str1):
