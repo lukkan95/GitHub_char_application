@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
+import git_token_crypt #This is a module to encrypt user data: email and GitHub token
 
 import matplotlib.ticker as mticker
 
@@ -33,7 +34,8 @@ class GitRepoSigns(object):
     def get_api(self, search_user='OverCookedAgain'):
         self.search_user = search_user
         self.url = f'https://api.github.com/users/{self.search_user}/repos'
-        response = requests.get(self.url, auth=('szati95@wp.pl', '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'))
+        response = requests.get(self.url, auth=(git_token_crypt.code_decrypted('5:hTuk;\a)A)~'),
+                                                git_token_crypt.code_decrypted(',o)-uC.W0N48m<G_&>RF^?R.1a<!@?Zmgr9rhaGh')))
         if response.status_code == 200:
             return response
 
@@ -123,6 +125,8 @@ class GitRepoSigns(object):
 
 if __name__ == '__main__':
     view = GitRepoSigns()
+    print(git_token_crypt.code_decrypted('5:hTuk;\a)A)~'))
+    print(git_token_crypt.code_decrypted(',o)-uC.W0N48m<G_&>RF^?R.1a<!@?Zmgr9rhaGh'))
     if input('Press enter to start GUI: ') == '':
         view.root_mainloop()
     # print(view.get_api())

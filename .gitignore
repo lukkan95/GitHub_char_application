@@ -153,6 +153,7 @@ cmake-build-*/
 # File-based project format
 *.iws
 
+git_token_crypt.py
 # IntelliJ
 out/
 
