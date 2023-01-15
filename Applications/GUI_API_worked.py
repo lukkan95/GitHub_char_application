@@ -1,12 +1,19 @@
+import asyncio
+import random
 import tkinter as tk
+from concurrent.futures import ThreadPoolExecutor
 
+import aiohttp as aiohttp
 import requests
+
+import grequests
 
 from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-import git_token_crypt #This is a module to encrypt user data: email and GitHub token
+from Applications import git_token_crypt #This is a module to encrypt user data: email and GitHub token
+
 
 import matplotlib.ticker as mticker
 
@@ -34,10 +41,35 @@ class GitRepoSigns(object):
     def get_api(self, search_user='OverCookedAgain'):
         self.search_user = search_user
         self.url = f'https://api.github.com/users/{self.search_user}/repos'
-        response = requests.get(self.url, auth=(git_token_crypt.code_decrypted('5:hTuk;\a)A)~'),
-                                                git_token_crypt.code_decrypted(',o)-uC.W0N48m<G_&>RF^?R.1a<!@?Zmgr9rhaGh')))
+        response = requests.get(self.url, auth=(git_token_crypt.username,
+                                                git_token_crypt.user_token))
         if response.status_code == 200:
             return response
+        else:
+            raise ValueError('Server not respond correctly')
+
+
+    def get_tasks(self, session):
+        tasks = []
+        for i in range(20):
+            random_user = random.choice(['OverCookedAgain', 'Trickest'])
+            random_url = f'https://api.github.com/users/{random_user}/repos'
+            tasks.append(asyncio.create_task(session.get(random_url, auth=(git_token_crypt.username,
+                                                git_token_crypt.user_token), ssl=False)))
+        return tasks
+
+    async def get_api_async_way(self):
+        results = []
+        async with aiohttp.ClientSession() as session:
+            tasks = self.get_tasks(session)
+            responses = await asyncio.gather(*tasks)
+            for response in responses:
+                print(response.json())
+                results.append(await response.json())
+
+
+
+
 
     def convert_data_from_api_to_graph(self, user):
         self.user_not_found['text'] = ''
@@ -125,8 +157,7 @@ class GitRepoSigns(object):
 
 if __name__ == '__main__':
     view = GitRepoSigns()
-    print(git_token_crypt.code_decrypted('5:hTuk;\a)A)~'))
-    print(git_token_crypt.code_decrypted(',o)-uC.W0N48m<G_&>RF^?R.1a<!@?Zmgr9rhaGh'))
-    if input('Press enter to start GUI: ') == '':
-        view.root_mainloop()
-    # print(view.get_api())
+    # if input('Press enter to start GUI: ') == '':
+    #     # view.root_mainloop()
+    view.get_api_async_way()
+
