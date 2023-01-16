@@ -1,12 +1,11 @@
 import asyncio
 import random
+import time
 import tkinter as tk
-from concurrent.futures import ThreadPoolExecutor
 
 import aiohttp as aiohttp
 import requests
 
-import grequests
 
 from matplotlib.figure import Figure
 
@@ -48,14 +47,14 @@ class GitRepoSigns(object):
         else:
             raise ValueError('Server not respond correctly')
 
-
     def get_tasks(self, session):
         tasks = []
         for i in range(20):
             random_user = random.choice(['OverCookedAgain', 'Trickest'])
             random_url = f'https://api.github.com/users/{random_user}/repos'
-            tasks.append(asyncio.create_task(session.get(random_url, auth=(git_token_crypt.username,
-                                                git_token_crypt.user_token), ssl=False)))
+            tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
+                                                                                            git_token_crypt.user_token))))
+
         return tasks
 
     async def get_api_async_way(self):
@@ -64,10 +63,9 @@ class GitRepoSigns(object):
             tasks = self.get_tasks(session)
             responses = await asyncio.gather(*tasks)
             for response in responses:
-                print(response.json())
+                # print(await response.json())
                 results.append(await response.json())
-
-
+        return results
 
 
 
@@ -159,5 +157,8 @@ if __name__ == '__main__':
     view = GitRepoSigns()
     # if input('Press enter to start GUI: ') == '':
     #     # view.root_mainloop()
-    view.get_api_async_way()
-
+    start_time = time.time()
+    z = asyncio.run(view.get_api_async_way())
+    print(time.time() - start_time)
+    for i in range(len(z)):
+        print(z[i][0]['owner']['login'])
