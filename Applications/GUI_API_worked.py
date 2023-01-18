@@ -5,8 +5,6 @@ import tkinter as tk
 
 import aiohttp as aiohttp
 
-
-
 from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
