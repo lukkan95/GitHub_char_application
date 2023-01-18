@@ -3,16 +3,13 @@ import time
 
 
 def test_get_api_status_code(dummy_gui_api):
-    assert dummy_gui_api.get_api().status_code == 200
+    assert asyncio.run(dummy_gui_api.get_api_async_way('Trickest')).status == 200
 
-def test_get_api_response(dummy_gui_api):
-    assert type(dummy_gui_api.get_api().json()[0]) is dict
+def test_get_api_async_way_if_user_in_github(dummy_gui_api):
+    assert len(asyncio.run(dummy_gui_api.get_api_async_way('Trickest'))) != 0
 
-def test_get_api_check_if_user_in_github(dummy_gui_api):
-    if dummy_gui_api.get_api() != None:
-        return True
-    else:
-        raise ValueError('User not in Github')
+def test_get_api_async_way_if_user_not_in_github(dummy_gui_api):
+    assert len(asyncio.run(dummy_gui_api.get_api_async_way('%bcv,1543'))) == 0
 
 def test_performance_get_api(dummy_gui_api):
     start_time = time.time()

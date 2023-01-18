@@ -1,17 +1,17 @@
 import asyncio
-import random
+
 import time
 import tkinter as tk
 
 import aiohttp as aiohttp
-import requests
+
 
 
 from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from Applications import git_token_crypt #This is a module to encrypt user data: email and GitHub token
+from Applications import git_token_crypt
 
 
 import matplotlib.ticker as mticker
@@ -30,57 +30,48 @@ class GitRepoSigns(object):
         self.label2_user_not_found()
         self.entry_user_git()
         self.button_check_user()
-        # self.root_mainloop()
+        # self.found_user = None
+
 
     def root_mainloop(self):
         self.root.attributes("-topmost", True)
         self.root.mainloop()
 
 
-    def get_api(self, search_user='OverCookedAgain'):
-        self.search_user = search_user
-        self.url = f'https://api.github.com/users/{self.search_user}/repos'
-        response = requests.get(self.url, auth=(git_token_crypt.username,
-                                                git_token_crypt.user_token))
-        if response.status_code == 200:
-            return response
-        else:
-            raise ValueError('Server not respond correctly')
-
-    def get_tasks(self, session):
+    def get_tasks(self, session, search_user):
         tasks = []
-        for i in range(20):
-            random_user = random.choice(['OverCookedAgain', 'Trickest'])
-            random_url = f'https://api.github.com/users/{random_user}/repos'
-            tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
-                                                                                            git_token_crypt.user_token))))
+        self.search_user = None
+        self.search_user = search_user
+        random_url = f'https://api.github.com/users/{search_user}/repos'
+        tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
+                                                                                        git_token_crypt.user_token))))
 
         return tasks
 
-    async def get_api_async_way(self):
+    async def get_api_async_way(self, user='OverCookedAgain'):
         results = []
         async with aiohttp.ClientSession() as session:
-            tasks = self.get_tasks(session)
+            tasks = self.get_tasks(session, search_user=user)
             responses = await asyncio.gather(*tasks)
             for response in responses:
-                # print(await response.json())
-                results.append(await response.json())
-        return results
+                if response.status == 200:
+                    results.append(await response.json())
+                return results
 
 
 
     def convert_data_from_api_to_graph(self, user):
         self.user_not_found['text'] = ''
-        master_list = self.get_api(search_user=user)
-        if master_list is None:
+        master_list = asyncio.run(self.get_api_async_way(user=user))
+        if len(master_list) == 0:
             self.ax.cla()
             self.chart.draw()
             self.user_not_found['text'] = 'User is not in Github'
 
         else:
             name_str = []
-            for resp in master_list.json():
-                name_str.append(resp['name'])
+            for n in range(len(master_list[0])):
+                name_str.append(master_list[0][n]['name'])
             whole_signs = ''.join(name_str)
             self.graph_data(self.char_frequency(whole_signs))
 
@@ -132,7 +123,7 @@ class GitRepoSigns(object):
 
     def button_check_user(self):
         but_check_user = tk.Button(self.frame_up, text="Check", font=('Segoe UI', 10),
-                             command=lambda: self.convert_data_from_api_to_graph(self.en_user_git.get()))
+                             command = lambda: self.convert_data_from_api_to_graph(self.en_user_git.get()))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
     def label1_put_user(self):
@@ -155,10 +146,8 @@ class GitRepoSigns(object):
 
 if __name__ == '__main__':
     view = GitRepoSigns()
-    # if input('Press enter to start GUI: ') == '':
-    #     # view.root_mainloop()
-    start_time = time.time()
-    z = asyncio.run(view.get_api_async_way())
-    print(time.time() - start_time)
-    for i in range(len(z)):
-        print(z[i][0]['owner']['login'])
+    if input('Press enter to start GUI: ') == '':
+        view.root_mainloop()
+    # z = asyncio.run(view.get_api_async_way('OverCookedAgain'))
+    # for i in range(len(z[0])):
+    #     print(z[0][i]['name'])
