@@ -1,6 +1,7 @@
 import asyncio
 
-import time
+import re
+
 import tkinter as tk
 
 import aiohttp as aiohttp
@@ -11,7 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from Applications import git_token_crypt
 
-from tkinter import ttk
+
 import matplotlib.ticker as mticker
 
 
@@ -29,41 +30,50 @@ class GitRepoSigns(object):
         self.label2_user_not_found()
         self.entry_user_git()
         self.button_check_user()
-        self.button_main_window()
-        self.button_1_search()
-        # self.found_user = None
+        self.search_queue = [None]
+        self.searching_queue_tool()
+
 
 
     def root_mainloop(self):
         self.root.attributes("-topmost", True)
         self.root.mainloop()
 
+    def unpack_users(self, many):
+        list_split = re.split('[;|,*.\n\s/:_]', many)
+        list_unpacked = [i for i in list_split if i != '']
 
-    def get_tasks(self, session, search_user):
+        return list_unpacked
+
+    def get_tasks(self, session, search_users):
         tasks = []
         self.search_user = None
-        self.search_user = search_user
-        random_url = f'https://api.github.com/users/{search_user}/repos'
-        tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
-                                                                                        git_token_crypt.user_token))))
 
+        self.search_user = self.unpack_users(search_users)
+        for user in self.search_user:
+            random_url = f'https://api.github.com/users/{user}/repos'
+            tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
+
+                                                                            git_token_crypt.user_token))))
+        # print(tasks)
         return tasks
 
-    async def get_api_async_way(self, user='OverCookedAgain'):
+    async def get_api_async_way(self, users):
         results = []
         async with aiohttp.ClientSession() as session:
-            tasks = self.get_tasks(session, search_user=user)
+            tasks = self.get_tasks(session, users)
             responses = await asyncio.gather(*tasks)
             for response in responses:
                 if response.status == 200:
                     results.append(await response.json())
-                return results
+            print(results)
+            return results
 
 
 
-    def convert_data_from_api_to_graph(self, user):
+    def convert_data_from_api_to_graph(self, users):
         self.user_not_found['text'] = ''
-        master_list = asyncio.run(self.get_api_async_way(user=user))
+        master_list = asyncio.run(self.get_api_async_way(users))
         if len(master_list) == 0:
             self.ax.cla()
             self.chart.draw()
@@ -155,25 +165,35 @@ class GitRepoSigns(object):
                                      anchor='w')
         self.lb_new_frame.place(relx=0.05, rely=0.1, relheight=0.2, relwidth=0.9)
 
-    def button_main_window(self):
-        but_main_window = tk.Button(self.frame_left, text="Main window", font=('Segoe UI', 10),
-                             command = lambda: self.lower_frame())
-        but_main_window.place(relx=0.0, rely=0.0, relheight=0.05, relwidth=1)
 
-    def button_1_search(self):
-        but_1_search = tk.Button(self.frame_left, text="1st search", font=('Segoe UI', 10),
-                             command = lambda: self.new_frame())
-        but_1_search.place(relx=0.0, rely=0.05, relheight=0.05, relwidth=1)
+    def searching_queue_tool(self):
+        self.clicked = tk.StringVar()
+        self.clicked.set('Searching queue')
+        self.favourites = tk.OptionMenu(self.frame_left, self.clicked, *self.search_queue)
+        self.favourites.place(relx=0.0, rely=0.0, relwidth=1, relheight=0.05)
 
+    def fav_list_remove_None(self):
+        if None in self.search_queue:
+            self.search_queue.remove(None)
 
+    def fav_list_add(self, city):
+        if city in self.search_queue:
+            pass
+        else:
+            self.search_queue.append(city)
 
+    def fav_list_remove_city(self, city):
+        if len(self.search_queue) > 1:
+            self.search_queue.remove(city)
+            self.searching_queue_tool()
+        else:
+            self.search_queue.append(None)
+            self.search_queue.remove(city)
+            self.searching_queue_tool()
 
-    # def page_2
 
 if __name__ == '__main__':
     view = GitRepoSigns()
-    # if input('Press enter to start GUI: ') == '':
     view.root_mainloop()
-    # z = asyncio.run(view.get_api_async_way('OverCookedAgain'))
-    # for i in range(len(z[0])):
-    #     print(z[0][i]['name'])
+    # asyncio.run(view.get_api_async_way('Trickest, OverCookedAgain'))
+
