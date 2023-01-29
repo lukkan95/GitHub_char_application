@@ -12,9 +12,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 from Applications import git_token_crypt
 
-
 import matplotlib.ticker as mticker
 
+
+# example: Trickest, ddas,.-1, OverCookedAgain
 
 class GitRepoSigns(object):
 
@@ -32,8 +33,7 @@ class GitRepoSigns(object):
         self.button_check_user()
         self.search_queue = [None]
         self.searching_queue_tool()
-
-
+        self.button_approve_fav_choice()
 
     def root_mainloop(self):
         self.root.attributes("-topmost", True)
@@ -42,7 +42,6 @@ class GitRepoSigns(object):
     def unpack_users(self, many):
         list_split = re.split('[;|,*.\n\s/:_]', many)
         list_unpacked = [i for i in list_split if i != '']
-
         return list_unpacked
 
     def get_tasks(self, session, search_users):
@@ -50,41 +49,60 @@ class GitRepoSigns(object):
         self.search_user = None
 
         self.search_user = self.unpack_users(search_users)
+        self.git_user_names_list = []
+        self.search_queue.clear()
+        self.favourites.update()
         for user in self.search_user:
-            random_url = f'https://api.github.com/users/{user}/repos'
-            tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
+            self.current_user = user
+            if self.current_user in self.git_user_names_list:
+                pass
+            else:
+                self.git_user_names_list.append(user)
+                # print(self.current_user)
+                random_url = f'https://api.github.com/users/{self.current_user}/repos'
+                tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
 
-                                                                            git_token_crypt.user_token))))
+                                                                                                git_token_crypt.user_token))))
         # print(tasks)
         return tasks
 
     async def get_api_async_way(self, users):
         results = []
+        self.search_user = []
         async with aiohttp.ClientSession() as session:
             tasks = self.get_tasks(session, users)
             responses = await asyncio.gather(*tasks)
             for response in responses:
                 if response.status == 200:
-                    results.append(await response.json())
-            print(results)
+                    z = await response.json()
+                    if len(z) != 0:
+                        results.append({z[0]['owner']['login']: z})
+                        self.fav_list_add(z[0]['owner']['login'])
+                        # print(z[0]['owner']['login'])
+                    # else:
+                    #     results.append({z[0]['owner']['login']: 0})
             return results
 
-
-
-    def convert_data_from_api_to_graph(self, users):
+    def send_request_and_store_data(self, users):
         self.user_not_found['text'] = ''
-        master_list = asyncio.run(self.get_api_async_way(users))
-        if len(master_list) == 0:
-            self.ax.cla()
-            self.chart.draw()
+        self.master_list = None
+        try:
+            self.master_list = asyncio.run(self.get_api_async_way(users))
+            self.fav_list_remove_None()
+            self.searching_queue_tool()
+            return self.master_list
+        except:
             self.user_not_found['text'] = 'User is not in Github'
 
-        else:
-            name_str = []
-            for n in range(len(master_list[0])):
-                name_str.append(master_list[0][n]['name'])
-            whole_signs = ''.join(name_str)
-            self.graph_data(self.char_frequency(whole_signs))
+    def parse_storage_data(self, choice):
+        self.github_user_choice = choice
+        name_str = []
+        for i in range(len(self.master_list)):
+            if choice in self.master_list[i].keys():
+                for n in range(len(self.master_list[i][choice])):
+                    name_str.append(self.master_list[i][choice][n]['name'])
+        whole_signs = ''.join(name_str)
+        self.graph_data(self.char_frequency(whole_signs))
 
     def char_frequency(self, str1):
         dict_of_chars = {}
@@ -120,7 +138,7 @@ class GitRepoSigns(object):
         self.chart.get_tk_widget().pack(side=tk.TOP, expand=2)
         self.ax.set_xlabel('Signs')
         self.ax.set_ylabel('Ammount of sign')
-        self.ax.set_title(f'Frequencies of signs in {self.search_user}\'s repositories.')
+        self.ax.set_title(f'Frequencies of signs in {self.github_user_choice}\'s repositories.')
         self.chart.draw()
 
     def start_parameters(self):
@@ -134,7 +152,9 @@ class GitRepoSigns(object):
 
     def button_check_user(self):
         but_check_user = tk.Button(self.frame_up, text="Check", font=('Segoe UI', 10),
-                             command = lambda: self.convert_data_from_api_to_graph(self.en_user_git.get()))
+                                   command=lambda: [self.send_request_and_store_data(self.en_user_git.get()),
+                         self.parse_storage_data(choice=self.search_queue[0])])
+                                   #  command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
     def label1_put_user(self):
@@ -161,39 +181,44 @@ class GitRepoSigns(object):
     def new_frame(self):
         self.frame_new = tk.Frame(self.root, bg='#ffff66')
         self.frame_new.place(relx=0.2, rely=0.0, relwidth=0.8, relheight=1)
-        self.lb_new_frame = tk.Label(self.frame_new, bg='#ffff66', font=('Segoe UI', 10, 'bold'), text='elo',
+        self.lb_new_frame = tk.Label(self.frame_new, bg='#ffff66', font=('Segoe UI', 9, 'bold'), text='elo',
                                      anchor='w')
         self.lb_new_frame.place(relx=0.05, rely=0.1, relheight=0.2, relwidth=0.9)
-
 
     def searching_queue_tool(self):
         self.clicked = tk.StringVar()
         self.clicked.set('Searching queue')
         self.favourites = tk.OptionMenu(self.frame_left, self.clicked, *self.search_queue)
-        self.favourites.place(relx=0.0, rely=0.0, relwidth=1, relheight=0.05)
+        self.favourites.place(relx=0.0, rely=0.05, relwidth=1, relheight=0.05)
 
     def fav_list_remove_None(self):
         if None in self.search_queue:
             self.search_queue.remove(None)
 
-    def fav_list_add(self, city):
-        if city in self.search_queue:
-            pass
-        else:
-            self.search_queue.append(city)
+    def fav_list_add(self, person):
+        self.fav_list_remove_None()
+        self.search_queue.append(person)
 
-    def fav_list_remove_city(self, city):
+    def fav_list_remove_city(self, person):
         if len(self.search_queue) > 1:
-            self.search_queue.remove(city)
+            self.search_queue.remove(person)
             self.searching_queue_tool()
         else:
             self.search_queue.append(None)
-            self.search_queue.remove(city)
+            self.search_queue.remove(person)
             self.searching_queue_tool()
 
+
+
+    def button_approve_fav_choice(self):
+        but_approve_fav_choice = tk.Button(self.frame_left, text="Show", font=('Segoe UI', 9),
+                                   command=lambda: self.parse_storage_data(self.clicked.get()))
+        # command = lambda: self.callback())
+
+
+        but_approve_fav_choice.place(relx=0.0, rely=0.0, relheight=0.05, relwidth=1)
 
 if __name__ == '__main__':
     view = GitRepoSigns()
     view.root_mainloop()
     # asyncio.run(view.get_api_async_way('Trickest, OverCookedAgain'))
-
