@@ -1,6 +1,6 @@
 import pytest
 
-from Applications.GUI_API_worked import GitRepoSigns
+from Applications.GUI_API_multisearching import GitRepoSigns
 
 
 @pytest.fixture

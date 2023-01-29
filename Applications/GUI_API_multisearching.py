@@ -47,7 +47,6 @@ class GitRepoSigns(object):
     def get_tasks(self, session, search_users):
         tasks = []
         self.search_user = None
-
         self.search_user = self.unpack_users(search_users)
         self.git_user_names_list = []
         self.search_queue.clear()
@@ -58,7 +57,6 @@ class GitRepoSigns(object):
                 pass
             else:
                 self.git_user_names_list.append(user)
-                # print(self.current_user)
                 random_url = f'https://api.github.com/users/{self.current_user}/repos'
                 tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
 
@@ -78,9 +76,7 @@ class GitRepoSigns(object):
                     if len(z) != 0:
                         results.append({z[0]['owner']['login']: z})
                         self.fav_list_add(z[0]['owner']['login'])
-                        # print(z[0]['owner']['login'])
-                    # else:
-                    #     results.append({z[0]['owner']['login']: 0})
+            # print(results)
             return results
 
     def send_request_and_store_data(self, users):
@@ -199,26 +195,15 @@ class GitRepoSigns(object):
         self.fav_list_remove_None()
         self.search_queue.append(person)
 
-    def fav_list_remove_city(self, person):
-        if len(self.search_queue) > 1:
-            self.search_queue.remove(person)
-            self.searching_queue_tool()
-        else:
-            self.search_queue.append(None)
-            self.search_queue.remove(person)
-            self.searching_queue_tool()
-
-
 
     def button_approve_fav_choice(self):
         but_approve_fav_choice = tk.Button(self.frame_left, text="Show", font=('Segoe UI', 9),
                                    command=lambda: self.parse_storage_data(self.clicked.get()))
-        # command = lambda: self.callback())
-
-
         but_approve_fav_choice.place(relx=0.0, rely=0.0, relheight=0.05, relwidth=1)
 
 if __name__ == '__main__':
     view = GitRepoSigns()
+    # users_list = 'Trickest,OverCookedAgain,lukkan95,AzeemIdrisi,LocalSend,fathyb'
+    # print(view.send_request_and_store_data(users_list))
     view.root_mainloop()
     # asyncio.run(view.get_api_async_way('Trickest, OverCookedAgain'))
