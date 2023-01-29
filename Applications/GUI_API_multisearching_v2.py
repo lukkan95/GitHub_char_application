@@ -50,6 +50,8 @@ class GitRepoSigns(object):
 
         self.search_user = self.unpack_users(search_users)
         self.git_user_names_list = []
+        self.search_queue.clear()
+        self.favourites.update()
         for user in self.search_user:
             self.current_user = user
             self.git_user_names_list.append(user)
@@ -89,9 +91,10 @@ class GitRepoSigns(object):
     def parse_storage_data(self, choice):
         # print(choice)
         name_str = []
-        for quer in range(len(self.master_list)):
-            if choice in self.master_list[quer].keys():
-                name_str.append(self.master_list[quer][str(choice)])
+        for i in range(len(self.master_list)):
+            if choice in self.master_list[i].keys():
+                for n in range(len(self.master_list[i][choice])):
+                    name_str.append(self.master_list[i][choice][n]['name'])
         whole_signs = ''.join(name_str)
         self.graph_data(self.char_frequency(whole_signs))
 
@@ -129,7 +132,7 @@ class GitRepoSigns(object):
         self.chart.get_tk_widget().pack(side=tk.TOP, expand=2)
         self.ax.set_xlabel('Signs')
         self.ax.set_ylabel('Ammount of sign')
-        self.ax.set_title(f'Frequencies of signs in {self.git_user_names_list[0]}\'s repositories.')
+        self.ax.set_title(f'Frequencies of signs in {self.clicked.get()}\'s repositories.')
         self.chart.draw()
 
     def start_parameters(self):
@@ -143,8 +146,8 @@ class GitRepoSigns(object):
 
     def button_check_user(self):
         but_check_user = tk.Button(self.frame_up, text="Check", font=('Segoe UI', 10),
-                                   # command=lambda: self.send_request_and_store_data(self.en_user_git.get()))
-                                    command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
+                                   command=lambda: self.send_request_and_store_data(self.en_user_git.get()))
+                                   #  command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
     def label1_put_user(self):
