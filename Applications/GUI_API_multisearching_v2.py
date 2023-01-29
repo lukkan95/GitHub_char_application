@@ -83,13 +83,16 @@ class GitRepoSigns(object):
     def send_request_and_store_data(self, users):
         self.user_not_found['text'] = ''
         self.master_list = None
-        self.master_list = asyncio.run(self.get_api_async_way(users))
-        self.fav_list_remove_None()
-        self.searching_queue_tool()
-        return self.master_list
+        try:
+            self.master_list = asyncio.run(self.get_api_async_way(users))
+            self.fav_list_remove_None()
+            self.searching_queue_tool()
+            return self.master_list
+        except:
+            self.user_not_found['text'] = 'User is not in Github'
 
     def parse_storage_data(self, choice):
-        # print(choice)
+        self.github_user_choice = choice
         name_str = []
         for i in range(len(self.master_list)):
             if choice in self.master_list[i].keys():
@@ -132,7 +135,7 @@ class GitRepoSigns(object):
         self.chart.get_tk_widget().pack(side=tk.TOP, expand=2)
         self.ax.set_xlabel('Signs')
         self.ax.set_ylabel('Ammount of sign')
-        self.ax.set_title(f'Frequencies of signs in {self.clicked.get()}\'s repositories.')
+        self.ax.set_title(f'Frequencies of signs in {self.github_user_choice}\'s repositories.')
         self.chart.draw()
 
     def start_parameters(self):
@@ -146,7 +149,8 @@ class GitRepoSigns(object):
 
     def button_check_user(self):
         but_check_user = tk.Button(self.frame_up, text="Check", font=('Segoe UI', 10),
-                                   command=lambda: self.send_request_and_store_data(self.en_user_git.get()))
+                                   command=lambda: [self.send_request_and_store_data(self.en_user_git.get()),
+                         self.parse_storage_data(choice=self.search_queue[0])])
                                    #  command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
