@@ -40,6 +40,8 @@ class GitRepoSigns(object):
         self.entry_email()
         self.entry_github_token()
         self.button_save_email_and_token()
+        self.auth_user = None
+        self.auth_token = None
 
     def root_mainloop(self):
         self.root.attributes("-topmost", True)
@@ -64,9 +66,9 @@ class GitRepoSigns(object):
             else:
                 self.git_user_names_list.append(user)
                 random_url = f'https://api.github.com/users/{self.current_user}/repos'
-                tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(git_token_crypt.username,
+                tasks.append(asyncio.create_task(session.get(random_url, auth=aiohttp.BasicAuth(self.auth_user,
 
-                                                                                                git_token_crypt.user_token))))
+                                                                                                self.auth_token))))
         # print(tasks)
         return tasks
 
@@ -217,8 +219,10 @@ class GitRepoSigns(object):
         self.put_user.place(relx=0.05, rely=0.02, relheight=0.02, relwidth=0.9)
 
     def entry_email(self):
-        self.en_user_git = tk.Entry(self.frame_login, bg='white', justify='center')
-        self.en_user_git.place(relx=0.05, rely=0.06, relheight=0.04, relwidth=0.9)
+
+        self.en_email = tk.Entry(self.frame_login, bg='white', justify='center')
+        # self.en_email.insert(0, git_token_crypt.username)
+        self.en_email.place(relx=0.05, rely=0.06, relheight=0.04, relwidth=0.9)
 
     def label_github_token(self):
         self.put_user = tk.Label(self.frame_login, bg='#e0e0eb', font=('Segoe UI', 10), text='Your GitHub '
@@ -227,12 +231,13 @@ class GitRepoSigns(object):
         self.put_user.place(relx=0.05, rely=0.12, relheight=0.02, relwidth=0.9)
 
     def entry_github_token(self):
-        self.en_user_git = tk.Entry(self.frame_login, bg='white', justify='center')
-        self.en_user_git.place(relx=0.05, rely=0.16, relheight=0.04, relwidth=0.9)
+        self.en_token = tk.Entry(self.frame_login, bg='white', justify='center')
+        # self.en_token.insert(0, git_token_crypt.user_token)
+        self.en_token.place(relx=0.05, rely=0.16, relheight=0.04, relwidth=0.9)
 
     def button_save_email_and_token(self):
         but_approve_fav_choice = tk.Button(self.frame_login, text="Save", font=('Segoe UI', 9),
-                                   command=lambda: self.label_email_and_token_saved_correctly())
+                                   command=lambda: [self.label_email_and_token_saved_correctly(), self.change_email_and_token()])
         but_approve_fav_choice.place(relx=0.2, rely=0.22, relheight=0.04, relwidth=0.6)
 
     def label_email_and_token_saved_correctly(self):
@@ -241,6 +246,13 @@ class GitRepoSigns(object):
                                                                                                        'successfully!',
                                  anchor='w')
         self.put_user.place(relx=0.05, rely=0.27, relheight=0.02, relwidth=0.9)
+
+    def change_email_and_token(self):
+        self.auth_user = self.en_email.get()
+        # print(self.auth_user)
+        self.auth_token = self.en_token.get()
+        # print(self.auth_token)
+
 if __name__ == '__main__':
     view = GitRepoSigns()
     # users_list = 'Trickest,OverCookedAgain,lukkan95,AzeemIdrisi,LocalSend,fathyb'
