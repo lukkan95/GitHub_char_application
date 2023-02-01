@@ -155,14 +155,15 @@ class GitRepoSigns(object):
         self.en_user_git.place(relx=0.05, rely=0.35, relheight=0.25, relwidth=0.65)
 
     def button_check_user(self):
-        but_check_user = tk.Button(self.frame_up, text="Check", font=('Segoe UI', 10),
+        but_check_user = tk.Button(self.frame_up, text="Search", font=('Segoe UI', 10),
                                    command=lambda: [self.send_request_and_store_data(self.en_user_git.get()),
                          self.parse_storage_data(choice=self.search_queue[0])])
                                    #  command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
     def label1_put_user(self):
-        self.put_user = tk.Label(self.frame_up, bg='#ffff66', font=('Segoe UI', 10, 'bold'), text='GitHub user:',
+        self.put_user = tk.Label(self.frame_up, bg='#ffff66', font=('Segoe UI', 10, 'bold'), text='Search GitHub '
+                                                                                                  'user/-s:',
                                  anchor='w')
         self.put_user.place(relx=0.05, rely=0.1, relheight=0.2, relwidth=0.9)
 
@@ -214,7 +215,7 @@ class GitRepoSigns(object):
         self.frame_login.place(relx=0.0, rely=0.7, relwidth=0.2, relheight=1)
 
     def label_email(self):
-        self.put_user = tk.Label(self.frame_login, bg='#e0e0eb', font=('Segoe UI', 10), text='Your email:',
+        self.put_user = tk.Label(self.frame_login, bg='#e0e0eb', font=('Segoe UI', 10), text='Your username:',
                                  anchor='w')
         self.put_user.place(relx=0.05, rely=0.02, relheight=0.02, relwidth=0.9)
 
