@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-from Applications import git_token_crypt
+from Applications import git_acc_data
 
 import matplotlib.ticker as mticker
 
@@ -158,7 +158,6 @@ class GitRepoSigns(object):
         but_check_user = tk.Button(self.frame_up, text="Search", font=('Segoe UI', 10),
                                    command=lambda: [self.send_request_and_store_data(self.en_user_git.get()),
                          self.parse_storage_data(choice=self.search_queue[0])])
-                                   #  command = lambda: self.send_request_and_store_data('Trickest, ddas,.-1, OverCookedAgain'))
         but_check_user.place(relx=0.75, rely=0.35, relheight=0.25, relwidth=0.2)
 
     def label1_put_user(self):
@@ -250,13 +249,8 @@ class GitRepoSigns(object):
 
     def change_email_and_token(self):
         self.auth_user = self.en_email.get()
-        # print(self.auth_user)
         self.auth_token = self.en_token.get()
-        # print(self.auth_token)
 
 if __name__ == '__main__':
     view = GitRepoSigns()
-    # users_list = 'Trickest,OverCookedAgain,lukkan95,AzeemIdrisi,LocalSend,fathyb'
-    # print(view.send_request_and_store_data(users_list))
     view.root_mainloop()
-    # asyncio.run(view.get_api_async_way('Trickest, OverCookedAgain'))
